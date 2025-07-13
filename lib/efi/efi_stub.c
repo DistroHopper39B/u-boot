@@ -305,7 +305,7 @@ efi_status_t EFIAPI efi_main(efi_handle_t image,
 	struct efi_boot_services *boot = sys_table->boottime;
 	struct efi_entry_memmap map;
 	struct efi_gop *gop;
-	struct efi_entry_gopmode mode;
+	struct efi_gop_mode mode;
 	struct efi_entry_systable table;
 	efi_guid_t efi_gop_guid = EFI_GRAPHICS_OUTPUT_PROTOCOL_GUID;
 	efi_status_t ret;
@@ -338,6 +338,7 @@ efi_status_t EFIAPI efi_main(efi_handle_t image,
 		mode.fb_base = gop->mode->fb_base;
 		mode.fb_size = gop->mode->fb_size;
 		mode.info_size = gop->mode->info_size;
+		mode.info = gop->mode->info;
 		add_entry_addr(priv, EFIET_GOP_MODE, &mode, sizeof(mode),
 			       gop->mode->info,
 			       sizeof(struct efi_gop_mode_info));
