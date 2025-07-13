@@ -11,7 +11,11 @@
 #include <efi_variable.h>
 #include <log.h>
 #include <asm-generic/unaligned.h>
+#include <asm/global_data.h>
+#include <asm/post.h>
+#include <asm/u-boot-x86.h>
 #include <net.h>
+#include <mapmem.h>
 
 #define OBJ_LIST_INITIALIZED 0
 #define OBJ_LIST_NOT_INITIALIZED 1
@@ -177,6 +181,62 @@ static efi_status_t efi_init_os_indications(void)
 				    &os_indications_supported, false);
 }
 
+efi_status_t efi_stub_tables_init(void)
+{
+	struct efi_entry_systable *entry_table;
+	struct efi_system_table *sys_table;
+	efi_guid_t acpi = EFI_ACPI_TABLE_GUID;
+	efi_guid_t smbios = SMBIOS_TABLE_GUID;
+	void *rsdp_ptr = NULL;
+	void *smbios_ptr = NULL;
+	
+	int size, ret;
+	
+	ret = efi_info_get(EFIET_SYS_TABLE, (void **)&entry_table, &size);
+	if (ret) {
+		printf("Cannot find EFI system table, ret=%d\n", ret);
+		return ret;
+	}
+	
+	sys_table = (struct efi_system_table *) (uint32_t) entry_table->sys_table;
+	
+	for (int i = 0; i < sys_table->nr_tables; i++) {
+		if (!memcmp(&sys_table->tables[i].guid, &acpi, sizeof(efi_guid_t)))
+		{
+			printf("ACPI:\t0x%p\n", sys_table->tables[i].table);
+			rsdp_ptr = sys_table->tables[i].table;
+			break;
+		}
+	}
+	
+	if (!rsdp_ptr)
+	{
+		printf("Cannot find ACPI table\n");
+		return EFI_NOT_FOUND;
+	}
+	
+	gd_set_acpi_start(map_to_sysmem(rsdp_ptr));
+	
+	
+	for (int i = 0; i < sys_table->nr_tables; i++) {
+		if (!memcmp(&sys_table->tables[i].guid, &smbios, sizeof(efi_guid_t)))
+		{
+			smbios_ptr = sys_table->tables[i].table;
+			printf("SMBIOS:\t0x%p\n", sys_table->tables[i].table);
+			break;
+		}
+	}
+	
+	if (smbios_ptr) // not the end of the world if this one doesn't exist.
+	{
+		
+		gd_set_smbios_start(map_to_sysmem(smbios_ptr));
+	}
+		
+	
+	return EFI_SUCCESS;
+}
+
 /**
  * efi_init_early() - handle initialization at early stage
  *
@@ -190,6 +250,12 @@ int efi_init_early(void)
 
 	/* Allow unaligned memory access */
 	allow_unaligned();
+	
+	if (IS_ENABLED(CONFIG_EFI_STUB)) {
+		ret = efi_stub_tables_init();
+		if (ret != EFI_SUCCESS)
+			goto out;
+	}
 
 	/* Initialize root node */
 	ret = efi_root_node_register();
@@ -204,7 +270,7 @@ int efi_init_early(void)
 	ret = efi_driver_init();
 	if (ret != EFI_SUCCESS)
 		goto out;
-
+		
 	return 0;
 out:
 	/* never re-init UEFI subsystem */
@@ -235,6 +301,8 @@ static efi_status_t efi_start_obj_list(void)
  */
 efi_status_t efi_init_obj_list(void)
 {
+	
+	
 	efi_status_t ret = EFI_SUCCESS;
 
 	/* Initialize only once, but start every time if correctly initialized*/
