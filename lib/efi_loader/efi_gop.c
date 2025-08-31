@@ -18,17 +18,19 @@
 DECLARE_GLOBAL_DATA_PTR;
 
 static const efi_guid_t efi_gop_guid = EFI_GRAPHICS_OUTPUT_PROTOCOL_GUID;
+static const efi_guid_t efi_devpath_guid = EFI_DEVICE_PATH_PROTOCOL_GUID;
 
 /**
  * struct efi_gop_obj - graphical output protocol object
  *
- * @header:	EFI object header
- * @ops:	graphical output protocol interface
- * @info:	graphical output mode information
- * @mode:	graphical output mode
- * @vdev:	backing video device
- * @bpix:	bits per pixel
- * @fb:		frame buffer
+ * @header:		EFI object header
+ * @ops:		graphical output protocol interface
+ * @info:		graphical output mode information
+ * @mode:		graphical output mode
+ * @vdev:		backing video device
+ * @devpath:	device path interface
+ * @bpix:		bits per pixel
+ * @fb:			frame buffer
  */
 struct efi_gop_obj {
 	struct efi_object header;
@@ -36,6 +38,7 @@ struct efi_gop_obj {
 	struct efi_gop_mode_info info;
 	struct efi_gop_mode mode;
 	struct udevice *vdev;
+	struct efi_device_path devpath;
 	/* Fields we only have access to during init */
 	u32 bpix;
 	void *fb;
@@ -560,12 +563,22 @@ efi_status_t efi_gop_register(void)
 		gopobj->info.pixel_bitmask[2] = 0x001f; /* blue */
 	}
 	
-	printf("px format: %d\n", gopobj->info.pixel_format);
-	
-	gopobj->info.pixels_per_scanline = video_get_line_length(vdev);
+	gopobj->info.pixels_per_scanline = (video_get_line_length(vdev) / 4);
 	gopobj->bpix = bpix;
 	gopobj->fb = map_sysmem(fb_base, fb_size);
 	gopobj->vdev = vdev;
-
+	
+	/* Add EFI device path to handle 
+	 * This fixes Windows on UEFI
+	 */
+	ret = efi_add_protocol(&gopobj->header,
+		&efi_devpath_guid,
+		&gopobj->devpath);
+	
+	if (ret != EFI_SUCCESS) {
+		printf("ERROR: Failure adding device path protocol!\n");
+		return ret;
+	}
+	
 	return EFI_SUCCESS;
 }
