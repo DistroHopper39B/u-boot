@@ -3206,7 +3206,7 @@ efi_status_t EFIAPI efi_start_image(efi_handle_t image_handle,
 	efi_status_t exit_status;
 	jmp_buf exit_jmp;
 
-	EFI_ENTRY("%p, %p, %p", image_handle, exit_data_size, exit_data);
+	printf("%p, %p, %p", image_handle, exit_data_size, exit_data);
 
 	if (!efi_search_obj(image_handle))
 		return EFI_EXIT(EFI_INVALID_PARAMETER);

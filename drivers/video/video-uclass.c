@@ -579,6 +579,13 @@ int video_get_ysize(struct udevice *dev)
 	return priv->ysize;
 }
 
+int video_get_line_length(struct udevice *dev)
+{
+	struct video_priv *priv = dev_get_uclass_priv(dev);
+	
+	return priv->line_length;
+}
+
 #define SPLASH_DECL(_name) \
 	extern u8 __splash_ ## _name ## _begin[]; \
 	extern u8 __splash_ ## _name ## _end[]

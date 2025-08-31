@@ -300,7 +300,11 @@ static int query_console_serial(int *rows, int *cols)
 
 	/* Empty input buffer */
 	while (tstc())
+	{
+		printf("query\n");
 		getchar();
+	}
+		
 
 	/*
 	 * Not all terminals understand CSI [18t for querying the console size.
@@ -376,7 +380,7 @@ void efi_setup_console_size(void)
 	if (ret)
 		return;
 
-	log_debug("Console size %dx%d\n", rows, cols);
+	printf("Console size %dx%d\n", rows, cols);
 
 	/* Test if we can have Mode 1 */
 	if (cols >= 80 && rows >= 50) {

@@ -301,7 +301,7 @@ static efi_status_t efi_start_obj_list(void)
  */
 efi_status_t efi_init_obj_list(void)
 {
-	
+	gd->cur_serial_dev = NULL;
 	
 	efi_status_t ret = EFI_SUCCESS;
 

@@ -115,11 +115,14 @@ __weak void board_add_ram_info(int use_default)
 	/* please define platform specific board_add_ram_info() */
 }
 
+#if defined(CONFIG_SERIAL)
+
 static int init_baud_rate(void)
 {
 	gd->baudrate = env_get_ulong("baudrate", 10, CONFIG_BAUDRATE);
 	return 0;
 }
+#endif
 
 static int display_text_info(void)
 {
@@ -930,8 +933,10 @@ static void initcall_run_f(void)
 	INITCALL(board_postclk_init);
 #endif
 	INITCALL(env_init);		/* initialize environment */
+#if CONFIG_IS_ENABLED(SERIAL)
 	INITCALL(init_baud_rate);	/* initialze baudrate settings */
 	INITCALL(serial_init);		/* serial communications setup */
+#endif
 	INITCALL(console_init_f);	/* stage 1 init of console */
 	INITCALL(display_options);	/* say that we are here */
 	INITCALL(display_text_info);	/* show debugging info if required */

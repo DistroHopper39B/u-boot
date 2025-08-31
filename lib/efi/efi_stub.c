@@ -14,7 +14,9 @@
 #include <efi_api.h>
 #include <errno.h>
 #include <malloc.h>
+#ifdef DEBUG_UART_NS16550
 #include <ns16550.h>
+#endif
 #include <asm/cpu.h>
 #include <asm/io.h>
 #include <linux/err.h>
@@ -59,6 +61,7 @@ void _debug_uart_init(void)
 {
 }
 
+#ifdef DEBUG_UART_NS16550
 void putc(const char ch)
 {
 	struct efi_priv *priv = efi_get_priv();
@@ -76,6 +79,12 @@ void putc(const char ch)
 		efi_putc(priv, ch);
 	}
 }
+#else
+void putc(const char ch)
+{
+	
+}
+#endif
 
 void puts(const char *str)
 {

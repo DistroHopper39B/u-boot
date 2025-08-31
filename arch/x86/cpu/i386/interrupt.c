@@ -269,7 +269,7 @@ int interrupt_init(void)
 	 * When running as an EFI application we are not in control of
 	 * interrupts and should leave them alone.
 	 */
-	if (!ll_boot_init())
+	if (IS_ENABLED(EFI_APP))
 		return 0;
 
 	/* Try to set up the interrupt router, but don't require one */
