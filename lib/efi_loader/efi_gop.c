@@ -473,13 +473,11 @@ static efi_status_t EFIAPI gop_blt(struct efi_gop *this,
  * If no supported video device exists this is not considered as an
  * error.
  */
- 
-int video_get_line_length(struct udevice *dev);
 
 efi_status_t efi_gop_register(void)
 {
 	struct efi_gop_obj *gopobj;
-	u32 bpix, format, col, row;
+	u32 bpix, format, col, row, pixels_per_scanline;
 	u64 fb_base, fb_size;
 	efi_status_t ret;
 	struct udevice *vdev;
@@ -497,6 +495,7 @@ efi_status_t efi_gop_register(void)
 	format = priv->format;
 	col = video_get_xsize(vdev);
 	row = video_get_ysize(vdev);
+	pixels_per_scanline = (video_get_line_length(vdev) / 4);
 
 	plat = dev_get_uclass_plat(vdev);
 	fb_base = IS_ENABLED(CONFIG_VIDEO_COPY) ? plat->copy_base : plat->base;
@@ -561,7 +560,7 @@ efi_status_t efi_gop_register(void)
 		gopobj->info.pixel_bitmask[2] = 0x001f; /* blue */
 	}
 	
-	gopobj->info.pixels_per_scanline = (video_get_line_length(vdev) / 4);
+	gopobj->info.pixels_per_scanline = pixels_per_scanline;
 	gopobj->bpix = bpix;
 	gopobj->fb = map_sysmem(fb_base, fb_size);
 	gopobj->vdev = vdev;

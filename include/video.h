@@ -350,6 +350,15 @@ int video_get_xsize(struct udevice *dev);
 int video_get_ysize(struct udevice *dev);
 
 /**
+ * video_get_line_length() - Get the number of bytes per line
+ *
+ * @dev:	Device to check
+ * Return: device frame buffer bytes per line
+ */
+
+int video_get_line_length(struct udevice *dev);
+
+/**
  * Set whether we need to flush the dcache when changing the image. This
  * defaults to off.
  *
