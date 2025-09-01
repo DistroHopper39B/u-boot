@@ -501,8 +501,6 @@ efi_status_t efi_gop_register(void)
 	plat = dev_get_uclass_plat(vdev);
 	fb_base = IS_ENABLED(CONFIG_VIDEO_COPY) ? plat->copy_base : plat->base;
 	fb_size = plat->size;
-	
-	printf("GOP: Base 0x%08llX width %d height %d\n", fb_base, col, row);
 
 	switch (bpix) {
 	case VIDEO_BPP16:
@@ -568,7 +566,8 @@ efi_status_t efi_gop_register(void)
 	gopobj->fb = map_sysmem(fb_base, fb_size);
 	gopobj->vdev = vdev;
 	
-	/* Add EFI device path to handle 
+	/* 
+	 * Add EFI device path to handle 
 	 * This fixes Windows on UEFI
 	 */
 	ret = efi_add_protocol(&gopobj->header,

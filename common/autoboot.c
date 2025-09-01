@@ -389,7 +389,7 @@ static int abortboot_single_key(int bootdelay)
 	if (tstc()) {	/* we got a key press	*/
 		getchar();	/* consume input	*/
 		puts("\b\b\b 0");
-		abort = 0;	/* don't auto boot	*/
+		abort = 1;	/* don't auto boot	*/
 	}
 
 	while ((bootdelay > 0) && (!abort)) {
